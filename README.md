@@ -32,7 +32,7 @@ In the Gemfile for your application:
 
 To get the latest version, pull directly from github instead of the gem:
 
-    gem "devise_ldap_authenticatable", :git => "git://github.com/cschiewek/devise_ldap_authenticatable.git"
+    gem "devise_ldap_authenticatable", :git => "git://github.com/dmadouros/devise_ldap_authenticatable.git"
 
 
 Setup
@@ -42,61 +42,14 @@ Run the rails generators for devise (please check the [devise](http://github.com
     rails generate devise:install
     rails generate devise MODEL_NAME
 
-Run the rails generator for `devise_ldap_authenticatable`
-
-    rails generate devise_ldap_authenticatable:install [options]
-
-This will install the ldap.yml, update the devise.rb initializer, and update your user model. There are some options you can pass to it:
-
-Options:
-
-    [--user-model=USER_MODEL]  # Model to update
-                               # Default: user
-    [--update-model]           # Update model to change from database_authenticatable to ldap_authenticatable
-                               # Default: true
-    [--add-rescue]             # Update Application Controller with rescue_from for DeviseLdapAuthenticatable::LdapException
-                               # Default: true
-    [--advanced]               # Add advanced config options to the devise initializer
-
-Querying LDAP
--------------
-Given that `ldap_create_user` is set to true and you are authenticating with username, you can query an LDAP server for other attributes.
-
-in your user model you have to simply define `ldap_before_save` method:
-
-    def ldap_before_save
-      self.email = Devise::LDAP::Adapter.get_ldap_param(self.username,"mail").first
-    end
-
 Configuration
 -------------
 In initializer  `config/initializers/devise.rb` :
 
 * `ldap_logger` _(default: true)_
   * If set to true, will log LDAP queries to the Rails logger.
-* `ldap_create_user` _(default: false)_
-  * If set to true, all valid LDAP users will be allowed to login and an appropriate user record will be created. If set to false, you will have to create the user record before they will be allowed to login.
 * `ldap_config` _(default: #{Rails.root}/config/ldap.yml)_
   * Where to find the LDAP config file. Commented out to use the default, change if needed.
-* `ldap_update_password` _(default: true)_
-  * When doing password resets, if true will update the LDAP server. Requires admin password in the ldap.yml
-* `ldap_check_group_membership` _(default: false)_
-  * When set to true, the user trying to login will be checked to make sure they are in all of groups specified in the ldap.yml file.
-* `ldap_check_attributes` _(default: false)_
-  * When set to true, the user trying to login will be checked to make sure they have all of the attributes in the ldap.yml file.
-* `ldap_use_admin_to_bind` _(default: false)_
-  * When set to true, the admin user will be used to bind to the LDAP server during authentication.
-* `ldap_check_group_membership_without_admin` _(default: false)_
-  * When set to true, the group membership check is done with the user's own credentials rather than with admin credentials. Since these credentials are only available to the Devise user model during the login flow, the group check function will not work if a group check is performed when this option is true outside of the login flow (e.g., before particular actions).
-
-Advanced Configuration
-----------------------
-These parameters will be added to `config/initializers/devise.rb` when you pass the `--advanced` switch to the generator:
-
-* `ldap_auth_username_builder` _(default: `Proc.new() {|attribute, login, ldap| "#{attribute}=#{login},#{ldap.base}" }`)_
-  * You can pass a proc to the username option to explicitly specify the format that you search for a users' DN on your LDAP server.
-* `ldap_auth_password_build` _(default: `Proc.new() {|new_password| Net::LDAP::Password.generate(:sha, new_password) }`)_
-  * Optionally you can define a proc to create custom password encrption when user reset password
 
 Troubleshooting
 --------------
